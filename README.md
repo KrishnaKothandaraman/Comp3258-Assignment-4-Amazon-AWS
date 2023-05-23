@@ -47,8 +47,8 @@ This directory contains the class App.java which implements the ec2-worker part 
 ### Server
 
 This directory has 2 files
-** App.java **: Implements the image transformation and queueing logic
-** AppServlet.java**: Implements the servlet which is used with apache tomcat to make this service available to the world
+**App.java**: Implements the image transformation and queueing logic
+**AppServlet.java**: Implements the servlet which is used with apache tomcat to make this service available to the world
 
 ### Static files
 
