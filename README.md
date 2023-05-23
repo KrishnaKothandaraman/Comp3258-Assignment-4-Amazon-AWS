@@ -54,6 +54,8 @@ This directory has 2 files
 
 This directory contains the simple web interface to use this service, index.html
 
+**Note**: This project assumes you have Apache Tomcat and Maven installed on your computer as prerequisites!
+
 ## Run instructions
 
 ### Ec2-worker
@@ -66,11 +68,10 @@ Before step 3, you can transfer this file to your ec2 instance and run it there 
 
 ### Server
 
-**_NOTE:_** You must have set up apache tomcat on your ec2 instance or local computer already!
-
-1. `mvn clean install`
-2. Transfer `target/Comp3258_Assignment_4-1.0-SNAPSHOT.war` to the `webapps` dir of your Apache Tomcat installation
-3. Start your tomcat server
+1. `cd server/`
+2. `mvn clean install`
+3. Transfer `target/Comp3258_Assignment_4-1.0-SNAPSHOT.war` to the `webapps` dir of your Apache Tomcat installation
+4. Start your tomcat server
 
 
 ### Index.html
