@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+	body {
+      background-color: #f2f2f2;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      margin-top: 20px;
+      text-align: center;
+      font-family: "Arial Rounded MT Bold", Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h3 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+
+    .btn {
+      border: 2px solid #1e88e5;
+      color: #1e88e5;
+      background-color: transparent;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 8px 20px;
+      cursor: pointer;
+    }
+
+	.upload-btn-wrapper {
+	  position: relative;
+	  overflow: hidden;
+	  width: 100%;
+	}
+
+	.drop-box {
+	  border: 2px dashed #1e88e5;
+	  border-radius: 5px;
+	  height: 300px;
+	  width: 100%;
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	    box-sizing: border-box;
+	}
+
+    .drop-message {
+      color: #1e88e5;
+      font-weight: bold;
+    }
+
+    #imagePreview {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 5px;
+    }
+
+    #process_btn {
+      background-color: #1565c0;
+      border: none;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 8px 20px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    @keyframes barberPole {
+		0% { background-position: 0 0; }
+		100% { background-position: 100% 0; }
+	}
+
+	.processing {
+	  animation: barberPole 2s linear infinite;
+	}
+
+  </style>
+  <title>Image Processing</title>
+</head>
+<body>
+  <h1>Image Resizer!</h1>
+  <div class="container">
+    <h3>Select a file by dropping it here or click the button to choose a file</h3>
+    <div class="upload-btn-wrapper">
+      <div id="dropBox" class="drop-box" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+        <span class="drop-message">Drop your image here</span>
+      </div>
+      <input type="file" id="imageUpload" accept=".png" onchange="handleFileSelect(event)">
+    </div>
+    <button id="process_btn" onclick="processImage()">Process</button>
+  </div>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <script>
+  	let droppedFile = null;
+  	let file = null;
+    function handleFileSelect(event) {
+      file = event.target.files[0];
+      droppedFile = null;
+      previewImage(file);
+    }
+
+	function previewImage(dropped_file) {
+	  const reader = new FileReader();
+	  reader.onload = function(event) {
+	    const imagePreview = document.createElement("img");
+	    imagePreview.onload = function() {
+	      const dropBox = document.getElementById("dropBox");
+	      const dropBoxWidth = dropBox.offsetWidth;
+	      const dropBoxHeight = dropBox.offsetHeight;
+	      const previewWidth = imagePreview.width;
+	      const previewHeight = imagePreview.height;
+	      
+	      const scaleFactor = Math.min(dropBoxWidth / previewWidth, dropBoxHeight / previewHeight);
+	      
+	      const scaledWidth = previewWidth * scaleFactor;
+	      const scaledHeight = previewHeight * scaleFactor;
+	      
+	      imagePreview.style.width = `${scaledWidth}px`;
+	      imagePreview.style.height = `${scaledHeight}px`;
+	      
+	      dropBox.innerHTML = "";
+	      
+	      dropBox.appendChild(imagePreview);
+	    };
+	    imagePreview.src = event.target.result;
+	    imagePreview.classList.add("preview-image");
+	  };
+	  reader.readAsDataURL(dropped_file);
+	}
+
+    
+    function handleDragOver(event) {
+      event.preventDefault();
+    }
+    
+    function handleDrop(event) {
+      event.preventDefault();
+      droppedFile = event.dataTransfer.files[0];
+      file = null;
+      previewImage(droppedFile);
+    }
+    function processImage() {
+		  let fileInput;
+
+		  if (file) {
+		    fileInput = file;
+		  }
+		  else if (droppedFile) {
+		    fileInput = droppedFile;
+		  }
+		  else {
+		    alert('Please select a file.');
+		    return;
+		  }
+
+		  if (!fileInput.type.match('image/png')) {
+		    alert('Only PNG files are allowed.');
+		    return;
+		  }
+
+		  const processButton = document.getElementById('process_btn');
+		  processButton.innerText = 'Processing...';
+		  processButton.classList.add('processing');
+
+		  const reader = new FileReader();
+		  reader.onload = function(event) {
+		    const imageBytes = event.target.result.substring("data:image/png;base64,".length);
+
+		    const requestBody = {
+		      image: imageBytes
+		    };
+
+		    const request = new XMLHttpRequest();
+		    request.open('POST', 'http://54.168.243.199:8080/Comp3258_Assignment_4-1.0-SNAPSHOT/process-image');
+		    request.setRequestHeader('Content-Type', 'application/json');
+		    request.onreadystatechange = function() {
+		      if (request.readyState === XMLHttpRequest.DONE) {
+		        if (request.status === 200) {
+		          const response = JSON.parse(request.responseText);
+		          const processedImageBytes = response.data;
+		          const processedImageName = 'processed_' + fileInput.name;
+		    		processButton.innerText = 'Process';
+		    		processButton.classList.remove('processing');
+
+		          downloadProcessedFile(processedImageBytes, processedImageName);
+		        } else {
+		          alert('Error processing the image.');
+		        }
+		      }
+		    };
+
+		    request.send(JSON.stringify(requestBody));
+
+		  };
+
+		  reader.readAsDataURL(fileInput);
+}
+
+function downloadProcessedFile(imageBytes, imageName) {
+  const byteCharacters = atob(imageBytes);
+  const byteArrays = [];
+  for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+    const slice = byteCharacters.slice(offset, offset + 1024);
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+  const blob = new Blob(byteArrays, { type: 'image/png' });
+
+  saveAs(blob, imageName);
+}
+
+
+
+</script>
+</html>

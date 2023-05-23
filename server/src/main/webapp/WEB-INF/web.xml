@@ -1,0 +1,26 @@
+<web-app>
+	<filter>
+	    <filter-name>CorsFilter</filter-name>
+	    <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+	    <init-param>
+	        <param-name>cors.allowed.origins</param-name>
+	        <param-value>*</param-value>
+	    </init-param>
+	</filter>
+	
+	<filter-mapping>
+	    <filter-name>CorsFilter</filter-name>
+	    <url-pattern>/*</url-pattern>
+	</filter-mapping>
+  <servlet>
+    <servlet-name>AppServlet</servlet-name>
+    <servlet-class>com.projects.AppServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>AppServlet</servlet-name>
+    <url-pattern>/process-image</url-pattern>
+  </servlet-mapping>
+  
+  <!-- Other configurations -->
+</web-app>
